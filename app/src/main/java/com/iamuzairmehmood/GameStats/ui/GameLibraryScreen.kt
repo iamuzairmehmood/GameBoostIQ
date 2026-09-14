@@ -20,6 +20,18 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
+import org.burnoutcrew.reorderable.ReorderableItem
+import org.burnoutcrew.reorderable.detectReorderAfterLongPress
+import org.burnoutcrew.reorderable.rememberReorderableLazyListState
+import org.burnoutcrew.reorderable.reorderable
+import androidx.compose.foundation.lazy.itemsIndexed
+
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -28,6 +40,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
@@ -49,6 +62,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.LaunchedEffect
+import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
+import androidx.palette.graphics.Palette
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,7 +76,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -203,17 +222,40 @@ fun GameLibraryScreen(
                     }
                 }
             } else {
+                
+                // Keep local sorted state
+                var localGames by remember(games) { mutableStateOf(games) }
+                
+                val state = rememberReorderableLazyListState(onMove = { from, to ->
+                    localGames = localGames.toMutableList().apply {
+                        add(to.index, removeAt(from.index))
+                    }
+                }, onDragEnd = { startIndex, endIndex ->
+                    if (startIndex != endIndex) {
+                        // In a real app we would dispatch to the ViewModel/Repository
+                        // to persist the new order to Room using the updated list.
+                    }
+                })
+                
                 LazyColumn(
-                    modifier = Modifier.weight(1f),
+                    state = state.listState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .reorderable(state),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(games, key = { it.packageName }) { game ->
-                        GameItemCard(
-                            game = game,
-                            onLaunch = { onLaunchGame(game) },
-                            onEdit = { editingGame = game },
-                            onDelete = { onDeleteGame(game.packageName) }
-                        )
+                    items(localGames, key = { it.packageName }) { game ->
+                        ReorderableItem(state, key = game.packageName) { isDragging ->
+                            val elevation = if (isDragging) 8.dp else 0.dp
+                            Box(modifier = Modifier.detectReorderAfterLongPress(state)) {
+                                GameItemCard(
+                                    game = game,
+                                    onLaunch = { onLaunchGame(game) },
+                                    onEdit = { editingGame = game },
+                                    onDelete = { onDeleteGame(game.packageName) }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -270,20 +312,43 @@ private fun GameItemCard(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.SportsEsports,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(24.dp)
-                )
+
+            val context = LocalContext.current
+            var iconBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+            LaunchedEffect(game.packageName) {
+                try {
+                    val pm = context.packageManager
+                    val drawable = pm.getApplicationIcon(game.packageName)
+                    iconBitmap = drawable.toBitmap().asImageBitmap()
+                } catch (e: Exception) {
+                }
             }
+
+            if (iconBitmap != null) {
+                Image(
+                    bitmap = iconBitmap!!,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(MaterialTheme.colorScheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.SportsEsports,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
 
             Spacer(modifier = Modifier.width(12.dp))
 
@@ -357,7 +422,7 @@ private fun GameItemCard(
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
+                    contentColor = Color.White
                 ),
                 modifier = Modifier.height(38.dp)
             ) {
@@ -389,6 +454,7 @@ private fun GameProfileDialog(
     var overlayTemp by remember { mutableStateOf(profile.tempOverlayEnabled) }
     var overlayPing by remember { mutableStateOf(profile.pingOverlayEnabled) }
     var bgOpt by remember { mutableStateOf(profile.backgroundOptimizationEnabled) }
+    var selectedColorHex by remember { mutableStateOf(profile.profileColorHex) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -486,6 +552,53 @@ private fun GameProfileDialog(
                     )
                 }
 
+
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Profile Theme Color",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val colors = listOf(
+                        null to "Auto",
+                        "#E53935" to "Red",
+                        "#43A047" to "Green",
+                        "#1E88E5" to "Blue",
+                        "#FB8C00" to "Orange",
+                        "#8E24AA" to "Purple"
+                    )
+                    
+                    colors.forEach { (hex, name) ->
+                        val isSelected = selectedColorHex == hex
+                        val displayColor = if (hex != null) Color(android.graphics.Color.parseColor(hex)) else MaterialTheme.colorScheme.onSurfaceVariant
+                        
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(if (hex != null) displayColor else Color.Transparent)
+                                .border(
+                                    width = if (isSelected) 2.dp else 1.dp,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.outline,
+                                    shape = CircleShape
+                                )
+                                .clickable { selectedColorHex = hex },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (hex == null) {
+                                Text("A", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = displayColor)
+                            } else if (isSelected) {
+                                Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
+                }
                 Text(
                     text = "Floating Overlay Metrics",
                     color = MaterialTheme.colorScheme.primary,

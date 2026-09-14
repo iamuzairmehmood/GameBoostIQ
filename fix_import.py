@@ -1,7 +1,9 @@
-with open("app/src/main/java/com/iamuzairmehmood/gamestats/manager/GamingModeManager.kt", "r") as f:
+import re
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/GameLibraryScreen.kt", "r") as f:
     content = f.read()
 
-content = content.replace("import com.iamuzairmehmood.gamestats.model.RestoreReport.ManualRestoreItem", "import com.iamuzairmehmood.gamestats.model.ManualRestoreItem")
+content = content.replace("import androidx.compose.foundation.lazy.itemsIndexedIndexed", "import androidx.compose.foundation.lazy.itemsIndexed")
+content = content.replace("import androidx.compose.foundation.lazy.itemsIndexed\nimport androidx.compose.foundation.lazy.itemsIndexed", "import androidx.compose.foundation.lazy.itemsIndexed")
 
-with open("app/src/main/java/com/iamuzairmehmood/gamestats/manager/GamingModeManager.kt", "w") as f:
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/GameLibraryScreen.kt", "w") as f:
     f.write(content)

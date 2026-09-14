@@ -26,6 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.iamuzairmehmood.GameStats.GameStatsApplication
+import com.iamuzairmehmood.GameStats.data.SettingsRepository
 import com.iamuzairmehmood.GameStats.data.GameProfileEntity
 import com.iamuzairmehmood.GameStats.model.PerformanceMode
 import com.iamuzairmehmood.GameStats.ui.theme.GameStatsTheme
@@ -41,9 +42,10 @@ fun GameStatsApp() {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
-    var currentThemeMode by remember { mutableStateOf(ThemeMode.SYSTEM) }
-    var currentThemeAccent by remember { mutableStateOf(ThemeAccent.GREEN) }
-    var isDynamicColor by remember { mutableStateOf(false) }
+    val currentThemeMode by app.settingsRepository.themeMode.collectAsState()
+    val currentThemeAccent by app.settingsRepository.themeAccent.collectAsState()
+    val isDynamicColor by app.settingsRepository.isDynamicColor.collectAsState()
+    val hasCompletedSetup by app.settingsRepository.hasCompletedSetup.collectAsState()
 
     val stats by app.performanceMonitor.liveStats.collectAsState()
     val isGamingActive by app.gamingModeManager.isGamingModeActive.collectAsState()
@@ -180,12 +182,14 @@ fun GameStatsApp() {
             ) {
                 NavHost(
                     navController = navController,
-                    startDestination = "home"
+                    startDestination = if (hasCompletedSetup) "home" else "onboarding"
                 ) {
                     composable("home") {
                         HomeScreen(
                             stats = stats,
                             isGamingActive = isGamingActive,
+                            recentApps = games.sortedByDescending { it.lastPlayedTimestamp }.take(3),
+                            sessions = sessions,
                             onStartGaming = { mode, overlay -> },
                             onStopGaming = {
                                 scope.launch {
@@ -277,9 +281,9 @@ fun GameStatsApp() {
                             currentThemeMode = currentThemeMode,
                             currentThemeAccent = currentThemeAccent,
                             isDynamicColor = isDynamicColor,
-                            onThemeModeChange = { currentThemeMode = it },
-                            onThemeAccentChange = { currentThemeAccent = it },
-                            onDynamicColorChange = { isDynamicColor = it },
+                            onThemeModeChange = { app.settingsRepository.setThemeMode(it) },
+                            onThemeAccentChange = { app.settingsRepository.setThemeAccent(it) },
+                            onDynamicColorChange = { app.settingsRepository.setDynamicColor(it) },
                             onBack = { navController.popBackStack() },
                             onNavigate = { route -> navController.navigate(route) }
                         )
@@ -289,9 +293,9 @@ fun GameStatsApp() {
                             currentThemeMode = currentThemeMode,
                             currentThemeAccent = currentThemeAccent,
                             isDynamicColor = isDynamicColor,
-                            onThemeModeChange = { currentThemeMode = it },
-                            onThemeAccentChange = { currentThemeAccent = it },
-                            onDynamicColorChange = { isDynamicColor = it },
+                            onThemeModeChange = { app.settingsRepository.setThemeMode(it) },
+                            onThemeAccentChange = { app.settingsRepository.setThemeAccent(it) },
+                            onDynamicColorChange = { app.settingsRepository.setDynamicColor(it) },
                             onBack = { navController.popBackStack() },
                             onNavigate = { route -> navController.navigate(route) }
                         )
@@ -323,6 +327,7 @@ fun GameStatsApp() {
                         OnboardingScreen(
                             deviceReport = deviceReport,
                             onComplete = {
+                                app.settingsRepository.setCompletedSetup(true)
                                 navController.navigate("home") {
                                     popUpTo("onboarding") { inclusive = true }
                                 }

@@ -3,6 +3,7 @@ package com.iamuzairmehmood.GameStats
 import android.app.Application
 import com.iamuzairmehmood.GameStats.data.GameStatsDatabase
 import com.iamuzairmehmood.GameStats.data.GameStatsRepository
+import com.iamuzairmehmood.GameStats.data.SettingsRepository
 import com.iamuzairmehmood.GameStats.manager.DeviceCapabilityScanner
 import com.iamuzairmehmood.GameStats.manager.GamingModeManager
 import com.iamuzairmehmood.GameStats.monitor.PerformanceMonitor
@@ -16,6 +17,8 @@ class GameStatsApplication : Application() {
         private set
 
     lateinit var repository: GameStatsRepository
+        private set
+    lateinit var settingsRepository: SettingsRepository
         private set
 
     lateinit var performanceMonitor: PerformanceMonitor
@@ -31,6 +34,7 @@ class GameStatsApplication : Application() {
         super.onCreate()
 
         database = GameStatsDatabase.getInstance(this)
+        settingsRepository = SettingsRepository(this)
         repository = GameStatsRepository(database.gameBoostDao(), this)
         performanceMonitor = PerformanceMonitor(this)
         capabilityScanner = DeviceCapabilityScanner(this)

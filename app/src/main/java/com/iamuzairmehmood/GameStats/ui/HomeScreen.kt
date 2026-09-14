@@ -3,6 +3,16 @@ package com.iamuzairmehmood.GameStats.ui
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import android.content.pm.PackageManager
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,6 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.iamuzairmehmood.GameStats.model.LiveGamingStats
 import com.iamuzairmehmood.GameStats.model.PerformanceMode
+import com.iamuzairmehmood.GameStats.data.GameProfileEntity
+import com.iamuzairmehmood.GameStats.data.GamingSessionEntity
 import com.iamuzairmehmood.GameStats.service.OverlayService
 import com.iamuzairmehmood.GameStats.monitor.PingTester
 import kotlinx.coroutines.launch
@@ -37,6 +49,8 @@ import kotlinx.coroutines.launch
 fun HomeScreen(
     stats: LiveGamingStats,
     isGamingActive: Boolean,
+    recentApps: List<GameProfileEntity> = emptyList(),
+    sessions: List<GamingSessionEntity> = emptyList(),
     onStartGaming: (PerformanceMode, Boolean) -> Unit,
     onStopGaming: () -> Unit,
     onNavigate: (String) -> Unit,
@@ -192,6 +206,37 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+
+            // Top Apps / Quick Launch
+            if (recentApps.isNotEmpty()) {
+                Text(
+                    "Quick Launch",
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Start,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    items(recentApps) { app ->
+                        TopAppItem(
+                            app = app,
+                            onClick = {
+                                val launchIntent = context.packageManager.getLaunchIntentForPackage(app.packageName)
+                                if (launchIntent != null) {
+                                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    context.startActivity(launchIntent)
+                                }
+                            }
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
             // Live Performance Monitor
             Text(
                 "Live Performance Monitor",
@@ -236,6 +281,74 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+
+            // Last Game Stats
+            Text(
+                "Last Game Stats",
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Start,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            if (sessions.isNotEmpty()) {
+                val lastSession = sessions.maxByOrNull { it.endTime ?: it.startTime }!!
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.VideogameAsset, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(lastSession.gameName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        val formatter = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
+                        val dateString = formatter.format(Date(lastSession.startTime))
+                        Text("Played on: $dateString", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        
+                        val durationMins = lastSession.durationSeconds / 60
+                        Text("Duration: ${durationMins}m", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                            PingResultMetric("Avg FPS", if (lastSession.avgFps.toInt() > 0) "${lastSession.avgFps.toInt()}" else "--")
+                            PingResultMetric("Avg Ping", if (lastSession.avgPingMs > 0) "${lastSession.avgPingMs}ms" else "--")
+                            PingResultMetric("Max Temp", if (lastSession.maxTemp.toInt() > 0) "${lastSession.maxTemp.toInt()}°C" else "--")
+                        }
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        OutlinedButton(
+                            onClick = { onNavigate("session_stats") },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("View All Sessions")
+                        }
+                    }
+                }
+            } else {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(24.dp).fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(Icons.Default.Analytics, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(48.dp))
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("No sessions recorded yet.", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Play a game with Game Mode to see stats.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(24.dp))
             // Ping Test Section
             Text(
                 "Network Ping Test",
@@ -329,5 +442,54 @@ fun PingResultMetric(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(90.dp)) {
         Text(text = label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+
+@Composable
+fun TopAppItem(app: GameProfileEntity, onClick: () -> Unit) {
+    val context = LocalContext.current
+    var iconBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    
+    LaunchedEffect(app.packageName) {
+        try {
+            val pm = context.packageManager
+            val drawable = pm.getApplicationIcon(app.packageName)
+            iconBitmap = drawable.toBitmap().asImageBitmap()
+        } catch (e: Exception) {
+            // fallback
+        }
+    }
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(72.dp).clickable { onClick() }
+    ) {
+        if (iconBitmap != null) {
+            Image(
+                bitmap = iconBitmap!!,
+                contentDescription = app.appName,
+                modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+            )
+        } else {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.VideogameAsset, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = app.appName,
+            fontSize = 11.sp,
+            maxLines = 1,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
+        )
     }
 }

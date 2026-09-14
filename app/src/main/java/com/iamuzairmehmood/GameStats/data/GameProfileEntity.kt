@@ -10,6 +10,8 @@ data class GameProfileEntity(
     val appName: String,
     val isCustomAdded: Boolean = false,
     val performanceMode: String = "PERFORMANCE",
+    val profileColorHex: String? = null,
+    val sortOrder: Int = 0,
     val fpsOverlayEnabled: Boolean = true,
     val tempOverlayEnabled: Boolean = true,
     val pingOverlayEnabled: Boolean = true,
