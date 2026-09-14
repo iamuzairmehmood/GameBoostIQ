@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">Game BoostIQ</string>
+    <string name="app_name">GameStats</string>
     <string name="app_tagline">Smart Gaming Optimization &amp; Performance Monitor</string>
     <string name="developer_credit">Developed by iamuzairmehmood</string>
     <string name="developer_credit_full">Developed by iamuzairmehmood\nhttp://iamuzairmehmood.github.io/</string>
-    <string name="disclaimer">Game BoostIQ is an independent third-party utility. It is not affiliated with, endorsed by, or sponsored by any game publisher. Some features depend on Android version and OEM device support.</string>
+    <string name="disclaimer">GameStats is an independent third-party utility. It is not affiliated with, endorsed by, or sponsored by any game publisher. Some features depend on Android version and OEM device support.</string>
 </resources>

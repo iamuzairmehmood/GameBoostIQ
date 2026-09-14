@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "Game BoostIQ"
+rootProject.name = "GameStats"
 
 include(":app")
