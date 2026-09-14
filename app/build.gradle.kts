@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-  namespace = "com.iamuzairmehmood.gamestats"
+  namespace = "com.iamuzairmehmood.GameStats"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.iamuzairmehmood.gamestats"
+    applicationId = "com.iamuzairmehmood.GameStats"
     minSdk = 24
     targetSdk = 36
     versionCode = 1
