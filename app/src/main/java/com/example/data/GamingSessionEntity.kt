@@ -1,0 +1,25 @@
+package com.example.data
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "gaming_sessions")
+data class GamingSessionEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val gamePackageName: String? = null,
+    val gameName: String = "Global Gaming Mode",
+    val startTime: Long,
+    val endTime: Long,
+    val durationSeconds: Long,
+    val avgFps: Float = 0f,
+    val minFps: Float = 0f,
+    val maxFps: Float = 0f,
+    val avgTemp: Float = 0f,
+    val maxTemp: Float = 0f,
+    val avgPingMs: Int = 0,
+    val batteryUsedPercent: Int = 0,
+    val startBattery: Int = 100,
+    val endBattery: Int = 100,
+    val performanceMode: String = "PERFORMANCE"
+)

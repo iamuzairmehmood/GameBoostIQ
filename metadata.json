@@ -1,0 +1,6 @@
+{
+  "name": "GameBoostIQ",
+  "description": "Smart Gaming Optimization & Performance Monitor. Non-root real-time performance monitor, thermal guard, latency probe, and session analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
