@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-  namespace = "com.example"
+  namespace = "com.iamuzairmehmood.gameboostiq"
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.gameboost.qxvrtp"
+    applicationId = "com.iamuzairmehmood.gameboostiq"
     minSdk = 24
     targetSdk = 36
     versionCode = 1
