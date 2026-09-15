@@ -318,8 +318,10 @@ private fun GameItemCard(
             LaunchedEffect(game.packageName) {
                 try {
                     val pm = context.packageManager
-                    val drawable = pm.getApplicationIcon(game.packageName)
-                    iconBitmap = drawable.toBitmap().asImageBitmap()
+                    val bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        pm.getApplicationIcon(game.packageName).toBitmap()
+                    }
+                    iconBitmap = bitmap.asImageBitmap()
                 } catch (e: Exception) {
                 }
             }

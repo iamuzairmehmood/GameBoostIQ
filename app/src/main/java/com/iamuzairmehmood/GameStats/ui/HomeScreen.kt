@@ -509,8 +509,9 @@ fun TopAppItem(app: GameProfileEntity, onClick: () -> Unit) {
     LaunchedEffect(app.packageName) {
         try {
             val pm = context.packageManager
-            val drawable = pm.getApplicationIcon(app.packageName)
-            val bmp = drawable.toBitmap()
+            val bmp = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                pm.getApplicationIcon(app.packageName).toBitmap()
+            }
             iconBitmap = bmp.asImageBitmap()
             
             Palette.from(bmp).generate { palette ->

@@ -5,49 +5,50 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
     
-    <!-- Shadow for depth -->
+    <!-- Outer Controller Outline -->
     <path
-        android:fillColor="#40000000"
-        android:pathData="M 32,44 C 32,34 40,26 50,26 L 58,26 C 68,26 76,34 76,44 L 78,66 C 78,76 70,84 60,84 L 56,78 L 52,78 L 48,84 C 38,84 30,76 30,66 Z"/>
-    
-    <!-- Main Gamepad Body (Inner Fill) -->
+        android:strokeColor="#00E676"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M 32,34
+                          C 20,34 18,48 18,58
+                          C 18,68 26,74 34,74
+                          C 42,74 48,60 50,58
+                          L 58,58
+                          C 60,60 66,74 74,74
+                          C 82,74 90,68 90,58
+                          C 90,48 88,34 76,34
+                          L 64,34
+                          C 61,40 57,42 54,42
+                          C 51,42 47,40 44,34
+                          Z" />
+                          
+    <!-- D-Pad -->
     <path
-        android:fillColor="#150030"
-        android:pathData="M 30,42 C 30,32 38,24 48,24 L 60,24 C 70,24 78,32 78,42 L 80,64 C 80,74 72,82 62,82 L 58,76 L 50,76 L 46,82 C 36,82 28,74 28,64 Z"/>
+        android:strokeColor="#00E676"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:pathData="M 32,45 L 32,55 M 27,50 L 37,50" />
         
-    <!-- Main Gamepad Body (Neon Outline/Glow style) -->
+    <!-- Action Buttons -->
     <path
-        android:fillColor="#00000000"
-        android:strokeColor="#00E5FF"
+        android:fillColor="#00E676"
+        android:pathData="M 76,43 A 2.5,2.5 0 1 1 76,48 A 2.5,2.5 0 1 1 76,43 Z" />
+    <path
+        android:fillColor="#00E676"
+        android:pathData="M 83,50 A 2.5,2.5 0 1 1 83,55 A 2.5,2.5 0 1 1 83,50 Z" />
+    <path
+        android:fillColor="#00E676"
+        android:pathData="M 76,57 A 2.5,2.5 0 1 1 76,62 A 2.5,2.5 0 1 1 76,57 Z" />
+    <path
+        android:fillColor="#00E676"
+        android:pathData="M 69,50 A 2.5,2.5 0 1 1 69,55 A 2.5,2.5 0 1 1 69,50 Z" />
+        
+    <!-- Center Option Buttons -->
+    <path
+        android:strokeColor="#00E676"
         android:strokeWidth="3"
-        android:strokeLineJoin="round"
-        android:pathData="M 30,42 C 30,32 38,24 48,24 L 60,24 C 70,24 78,32 78,42 L 80,64 C 80,74 72,82 62,82 L 58,76 L 50,76 L 46,82 C 36,82 28,74 28,64 Z"/>
-
-    <!-- Screen/Center Panel Fill -->
-    <path
-        android:fillColor="#0a001a"
-        android:pathData="M 42,34 L 66,34 C 68,34 70,36 70,38 L 70,50 C 70,52 68,54 66,54 L 42,54 C 40,54 38,52 38,50 L 38,38 C 38,36 40,34 42,34 Z"/>
-
-    <!-- Screen/Center Panel Outline -->
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FF007F"
-        android:strokeWidth="2"
-        android:strokeLineJoin="round"
-        android:pathData="M 42,34 L 66,34 C 68,34 70,36 70,38 L 70,50 C 70,52 68,54 66,54 L 42,54 C 40,54 38,52 38,50 L 38,38 C 38,36 40,34 42,34 Z"/>
-
-    <!-- Bar Chart inside Screen -->
-    <path
-        android:fillColor="#00E5FF"
-        android:pathData="M 44,50 L 48,50 L 48,46 L 44,46 Z M 52,50 L 56,50 L 56,42 L 52,42 Z M 60,50 L 64,50 L 64,38 L 60,38 Z"/>
-
-    <!-- D-Pad Left -->
-    <path
-        android:fillColor="#FF007F"
-        android:pathData="M 36,64 h 4 v -4 h 4 v 4 h 4 v 4 h -4 v 4 h -4 v -4 h -4 z"/>
-
-    <!-- Action Buttons Right -->
-    <path
-        android:fillColor="#FF007F"
-        android:pathData="M 62,68 C 62,66 64,64 66,64 C 68,64 70,66 70,68 C 70,70 68,72 66,72 C 64,72 62,70 62,68 Z M 68,62 C 68,60 70,58 72,58 C 74,58 76,60 76,62 C 76,64 74,66 72,66 C 70,66 68,64 68,62 Z"/>
+        android:strokeLineCap="round"
+        android:pathData="M 48,50 L 52,50 M 56,50 L 60,50" />
 </vector>

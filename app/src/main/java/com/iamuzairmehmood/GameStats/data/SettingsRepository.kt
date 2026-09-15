@@ -17,7 +17,7 @@ class SettingsRepository(context: Context) {
     val themeMode: StateFlow<ThemeMode> = _themeMode.asStateFlow()
 
     private val _themeAccent = MutableStateFlow(
-        ThemeAccent.valueOf(prefs.getString("theme_accent", ThemeAccent.ORANGE.name) ?: ThemeAccent.ORANGE.name)
+        ThemeAccent.valueOf(prefs.getString("theme_accent", ThemeAccent.GREEN.name) ?: ThemeAccent.GREEN.name)
     )
     val themeAccent: StateFlow<ThemeAccent> = _themeAccent.asStateFlow()
     
