@@ -49,6 +49,11 @@ class PerformanceMonitor(private val context: Context) {
     var cpuOrangeSec = 0L
     var cpuRedSec = 0L
 
+    val fpsHistory = mutableListOf<Float>()
+    val tempHistory = mutableListOf<Float>()
+    val pingHistory = mutableListOf<Float>()
+    val cpuHistory = mutableListOf<Float>()
+
     private val isMonitoring = AtomicBoolean(false)
     private var tickerJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -92,6 +97,11 @@ class PerformanceMonitor(private val context: Context) {
             cpuGreenSec = 0
             cpuOrangeSec = 0
             cpuRedSec = 0
+
+            fpsHistory.clear()
+            tempHistory.clear()
+            pingHistory.clear()
+            cpuHistory.clear()
             
             fpsMonitor.start()
             temperatureMonitor.start()
@@ -167,6 +177,14 @@ class PerformanceMonitor(private val context: Context) {
                         cpuLoadPercent = cpuLoad,
                         sessionDurationSeconds = sessionSec
                     )
+                    
+                    // Record history every 5 seconds to prevent huge data
+                    if (sessionSec % 5 == 0L) {
+                        fpsHistory.add(currentFps?.toFloat() ?: 0f)
+                        tempHistory.add(thermal.temperatureCelsius)
+                        pingHistory.add(net.pingMs.toFloat())
+                        cpuHistory.add(cpuLoad?.toFloat() ?: 0f)
+                    }
                     
                     delay(1000L)
                 }

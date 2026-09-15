@@ -12,16 +12,30 @@
                 android:startY="0"
                 android:endX="108"
                 android:endY="108">
-                <item android:color="#4A148C" android:offset="0.0" />
-                <item android:color="#1A237E" android:offset="1.0" />
+                <item android:color="#0a0015" android:offset="0.0" />
+                <item android:color="#1c0038" android:offset="0.5" />
+                <item android:color="#0a002a" android:offset="1.0" />
             </gradient>
         </aapt:attr>
     </path>
-    <!-- Add some subtle background tech lines -->
+    <!-- Crosshair / Grid accent -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="1"
+        android:strokeAlpha="0.2"
+        android:pathData="M 54,10 L 54,98 M 10,54 L 98,54"/>
+    <!-- Subtle concentric circles -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FF007F"
         android:strokeWidth="1"
         android:strokeAlpha="0.1"
-        android:pathData="M 0,20 L 108,20 M 0,40 L 108,40 M 0,60 L 108,60 M 0,80 L 108,80 M 20,0 L 20,108 M 40,0 L 40,108 M 60,0 L 60,108 M 80,0 L 80,108"/>
+        android:pathData="M 54,24 A 30,30 0 1,1 54,84 A 30,30 0 1,1 54,24 Z"/>
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="1"
+        android:strokeAlpha="0.05"
+        android:pathData="M 54,14 A 40,40 0 1,1 54,94 A 40,40 0 1,1 54,14 Z"/>
 </vector>

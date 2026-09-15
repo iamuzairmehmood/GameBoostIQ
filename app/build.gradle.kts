@@ -92,6 +92,11 @@ dependencies {
   implementation(libs.androidx.compose.ui)
   implementation(libs.androidx.compose.ui.graphics)
   implementation(libs.androidx.compose.ui.tooling.preview)
+
+  implementation("com.patrykandpatrick.vico:compose:1.14.0")
+  implementation("com.patrykandpatrick.vico:compose-m3:1.14.0")
+  implementation("com.patrykandpatrick.vico:core:1.14.0")
+
   implementation(libs.androidx.core.ktx)
   // implementation(libs.androidx.datastore.preferences)
   implementation(libs.androidx.lifecycle.runtime.compose)

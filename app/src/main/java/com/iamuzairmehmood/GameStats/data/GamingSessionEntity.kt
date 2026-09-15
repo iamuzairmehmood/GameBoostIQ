@@ -33,5 +33,9 @@ data class GamingSessionEntity(
     val fpsRedDurationSec: Long = 0,
     val cpuGreenDurationSec: Long = 0,
     val cpuOrangeDurationSec: Long = 0,
-    val cpuRedDurationSec: Long = 0
+    val cpuRedDurationSec: Long = 0,
+    val fpsHistoryStr: String = "",
+    val tempHistoryStr: String = "",
+    val pingHistoryStr: String = "",
+    val cpuHistoryStr: String = ""
 )

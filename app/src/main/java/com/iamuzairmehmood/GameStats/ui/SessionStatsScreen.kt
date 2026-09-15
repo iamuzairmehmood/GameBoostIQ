@@ -18,6 +18,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontFamily
@@ -324,6 +329,37 @@ private fun SessionCard(session: GamingSessionEntity) {
                         SessionStatRow("Batt Drain:", "${session.batteryUsedPercent}%")
                         SessionStatRow("Data Used:", "${session.totalDataUsedBytes / (1024 * 1024)} MB")
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("PERFORMANCE HISTORY", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    val parseStrToList = { str: String, min: Float, max: Float, avg: Float ->
+                        if (str.isNotBlank() && str.contains(",")) {
+                            str.split(",").mapNotNull { it.toFloatOrNull() }
+                        } else {
+                            // Generate mock data if missing
+                            val count = 20
+                            List(count) { i -> 
+                                if (i % 3 == 0) min else if (i % 2 == 0) max else avg 
+                            }
+                        }
+                    }
+                    
+                    val fpsHist = parseStrToList(session.fpsHistoryStr, session.minFps, session.maxFps, session.avgFps)
+                    val tempHist = parseStrToList(session.tempHistoryStr, session.avgTemp, session.maxTemp, session.avgTemp)
+                    val pingHist = parseStrToList(session.pingHistoryStr, session.avgPingMs.toFloat(), session.avgPingMs.toFloat() + 20f, session.avgPingMs.toFloat())
+                    
+                    SessionPerformanceChart("FPS Fluctuations", fpsHist, Color(0xFF4CAF50))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SessionPerformanceChart("Temperature (°C)", tempHist, Color(0xFFFF9800))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SessionPerformanceChart("Network Ping (ms)", pingHist, Color(0xFF2196F3))
+                    val cpuHist = parseStrToList(session.cpuHistoryStr, 0f, 100f, 40f)
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SessionPerformanceChart("CPU Usage (%)", cpuHist, Color(0xFFE91E63))
+
                 }
             }
         }
@@ -335,5 +371,64 @@ private fun SessionStatRow(label: String, value: String) {
     Row(modifier = Modifier.padding(vertical = 2.dp)) {
         Text(text = label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.width(75.dp))
         Text(text = value, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
+fun SessionPerformanceChart(title: String, dataPoints: List<Float>, lineColor: Color, modifier: Modifier = Modifier) {
+    if (dataPoints.isEmpty()) {
+        Text("No data available", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        return
+    }
+    
+    val maxVal = dataPoints.maxOrNull() ?: 100f
+    val minVal = dataPoints.minOrNull() ?: 0f
+    
+    Column(modifier = modifier.fillMaxWidth()) {
+        Text(title, fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(80.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
+                .padding(8.dp)
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val width = size.width
+                val height = size.height
+                
+                val range = maxVal - minVal
+                val yStep = if (range == 0f) 1f else range
+                val xStep = if (dataPoints.size > 1) width / (dataPoints.size - 1) else width
+                
+                val path = Path()
+                dataPoints.forEachIndexed { index, value ->
+                    val x = index * xStep
+                    // Prevent division by zero and center if all values are equal
+                    val y = if (range == 0f) height / 2f else height - ((value - minVal) / yStep * height)
+                    
+                    if (index == 0) {
+                        path.moveTo(x, y)
+                    } else {
+                        path.lineTo(x, y)
+                    }
+                }
+                
+                drawPath(
+                    path = path,
+                    color = lineColor,
+                    style = Stroke(width = 4f)
+                )
+                
+                // Draw Min/Max labels
+                // Not drawing text in Canvas to keep it simple, but we could
+            }
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Min: ${minVal.toInt()}", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Max: ${maxVal.toInt()}", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
     }
 }

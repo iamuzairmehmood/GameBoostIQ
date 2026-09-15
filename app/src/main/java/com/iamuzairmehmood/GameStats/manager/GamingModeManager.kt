@@ -236,7 +236,11 @@ class GamingModeManager(
                 fpsRedDurationSec = fpsRed,
                 cpuGreenDurationSec = 0L,
                 cpuOrangeDurationSec = 0L,
-                cpuRedDurationSec = 0L
+                cpuRedDurationSec = 0L,
+                fpsHistoryStr = performanceMonitor.fpsHistory.joinToString(","),
+                tempHistoryStr = performanceMonitor.tempHistory.joinToString(","),
+                pingHistoryStr = performanceMonitor.pingHistory.joinToString(","),
+                cpuHistoryStr = performanceMonitor.cpuHistory.joinToString(",")
             )
 
             scope.launch {

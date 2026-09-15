@@ -1,30 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     
-    <!-- Outer Shield/Hexagon for a gaming feel -->
+    <!-- Shadow for depth -->
+    <path
+        android:fillColor="#40000000"
+        android:pathData="M 32,44 C 32,34 40,26 50,26 L 58,26 C 68,26 76,34 76,44 L 78,66 C 78,76 70,84 60,84 L 56,78 L 52,78 L 48,84 C 38,84 30,76 30,66 Z"/>
+    
+    <!-- Main Gamepad Body (Inner Fill) -->
+    <path
+        android:fillColor="#150030"
+        android:pathData="M 30,42 C 30,32 38,24 48,24 L 60,24 C 70,24 78,32 78,42 L 80,64 C 80,74 72,82 62,82 L 58,76 L 50,76 L 46,82 C 36,82 28,74 28,64 Z"/>
+        
+    <!-- Main Gamepad Body (Neon Outline/Glow style) -->
     <path
         android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="4"
+        android:strokeColor="#00E5FF"
+        android:strokeWidth="3"
         android:strokeLineJoin="round"
-        android:pathData="M 54,16 L 86,30 L 86,64 C 86,81 72,98 54,106 C 36,98 22,81 22,64 L 22,30 Z"/>
+        android:pathData="M 30,42 C 30,32 38,24 48,24 L 60,24 C 70,24 78,32 78,42 L 80,64 C 80,74 72,82 62,82 L 58,76 L 50,76 L 46,82 C 36,82 28,74 28,64 Z"/>
 
-    <!-- Gamepad left side -->
+    <!-- Screen/Center Panel Fill -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M 50,44 L 38,44 A 8,8 0 0,0 30,52 L 30,60 A 8,8 0 0,0 38,68 L 44,68 L 44,72 L 50,66 L 50,44 Z M 40,50 h 4 v 4 h -4 z M 34,56 h 4 v 4 h -4 z"/>
+        android:fillColor="#0a001a"
+        android:pathData="M 42,34 L 66,34 C 68,34 70,36 70,38 L 70,50 C 70,52 68,54 66,54 L 42,54 C 40,54 38,52 38,50 L 38,38 C 38,36 40,34 42,34 Z"/>
 
-    <!-- Performance Graph Right side -->
+    <!-- Screen/Center Panel Outline -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M 58,44 L 70,44 A 8,8 0 0,1 78,52 L 78,60 A 8,8 0 0,1 70,68 L 64,68 L 64,72 L 58,66 L 58,44 Z M 64,60 L 64,50 L 68,54 L 72,48 L 72,60 Z"/>
-        
-    <!-- Center connecting line/accent -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M 52,48 L 56,48 L 56,62 L 52,62 Z"/>
+        android:fillColor="#00000000"
+        android:strokeColor="#FF007F"
+        android:strokeWidth="2"
+        android:strokeLineJoin="round"
+        android:pathData="M 42,34 L 66,34 C 68,34 70,36 70,38 L 70,50 C 70,52 68,54 66,54 L 42,54 C 40,54 38,52 38,50 L 38,38 C 38,36 40,34 42,34 Z"/>
 
+    <!-- Bar Chart inside Screen -->
+    <path
+        android:fillColor="#00E5FF"
+        android:pathData="M 44,50 L 48,50 L 48,46 L 44,46 Z M 52,50 L 56,50 L 56,42 L 52,42 Z M 60,50 L 64,50 L 64,38 L 60,38 Z"/>
+
+    <!-- D-Pad Left -->
+    <path
+        android:fillColor="#FF007F"
+        android:pathData="M 36,64 h 4 v -4 h 4 v 4 h 4 v 4 h -4 v 4 h -4 v -4 h -4 z"/>
+
+    <!-- Action Buttons Right -->
+    <path
+        android:fillColor="#FF007F"
+        android:pathData="M 62,68 C 62,66 64,64 66,64 C 68,64 70,66 70,68 C 70,70 68,72 66,72 C 64,72 62,70 62,68 Z M 68,62 C 68,60 70,58 72,58 C 74,58 76,60 76,62 C 76,64 74,66 72,66 C 70,66 68,64 68,62 Z"/>
 </vector>
