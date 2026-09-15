@@ -316,7 +316,9 @@ fun HomeScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        val fpsColor = if ((stats.fps ?: 60) >= 54) Color(0xFF4CAF50) else if ((stats.fps ?: 60) >= 45) Color(0xFFFF9800) else Color(0xFFF44336)
+                        val targetFps = stats.currentRefreshRateHz.toInt()
+                        val fpsColorHex = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getFpsColor(stats.fps ?: 60, if (targetFps > 0) targetFps else 60)
+                        val fpsColor = Color(android.graphics.Color.parseColor(fpsColorHex))
                         MetricBar(
                             label = "FPS (Frame Pacer)", 
                             value = stats.fps?.toString() ?: "--", 
@@ -325,7 +327,8 @@ fun HomeScreen(
                             color = fpsColor
                         )
                         val cpuLoad = stats.cpuLoadPercent ?: 30
-                        val cpuColor = if (cpuLoad < 65) Color(0xFF4CAF50) else if (cpuLoad <= 82) Color(0xFFFF9800) else Color(0xFFF44336)
+                        val cpuColorHex = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getCpuColor(cpuLoad)
+                        val cpuColor = Color(android.graphics.Color.parseColor(cpuColorHex))
                         MetricBar(
                             label = "CPU LOAD", 
                             value = if (stats.cpuLoadPercent != null) "${stats.cpuLoadPercent}%" else "Unavail", 
@@ -333,36 +336,41 @@ fun HomeScreen(
                             icon = Icons.Default.Memory,
                             color = cpuColor
                         )
+                        val ramColorHex = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getRamColor(stats.ramPercent)
+                        val ramColor = Color(android.graphics.Color.parseColor(ramColorHex))
                         MetricBar(
                             label = "RAM USAGE", 
                             value = "${stats.ramUsedGb} GB", 
                             progress = stats.ramPercent / 100f,
                             icon = Icons.Default.Storage,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = ramColor
                         )
                         val temp = stats.temperatureCelsius
-                        val tempColor = if (temp < 40) Color(0xFF4CAF50) else if (temp <= 44) Color(0xFFFF9800) else Color(0xFFF44336)
+                        val tempColorHex = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getTempColor(temp)
+                        val tempColor = Color(android.graphics.Color.parseColor(tempColorHex))
                         MetricBar(
                             label = "TEMPERATURE", 
-                            value = "${stats.temperatureCelsius}°C", 
-                            progress = stats.temperatureCelsius / 80f,
+                            value = "${"%.1f".format(temp)}°C", 
+                            progress = temp / 80f,
                             icon = Icons.Default.Thermostat,
                             color = tempColor
                         )
                         val ping = stats.pingMs
-                        val pingColor = if (ping <= 20) Color(0xFF8BC34A) else if (ping <= 50) Color(0xFF4CAF50) else if (ping <= 100) Color(0xFFFF9800) else Color(0xFFF44336)
+                        val pingColorHex = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getPingColor(ping)
+                        val pingColor = Color(android.graphics.Color.parseColor(pingColorHex))
                         MetricBar(
                             label = "PING (LATENCY)", 
-                            value = "${stats.pingMs} ms", 
-                            progress = stats.pingMs / 200f,
+                            value = "${ping} ms", 
+                            progress = ping / 200f,
                             icon = Icons.Default.NetworkPing,
                             color = pingColor
                         )
                         val batt = stats.batteryPercent
-                        val battColor = if (batt > 20) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        val battColorHex = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getBatteryColor(batt)
+                        val battColor = Color(android.graphics.Color.parseColor(battColorHex))
                         MetricBar(
                             label = "BATTERY", 
-                            value = "${stats.batteryPercent}%", 
+                            value = "${batt}%", 
                             progress = batt / 100f,
                             icon = Icons.Default.BatteryFull,
                             color = battColor
@@ -409,9 +417,17 @@ fun HomeScreen(
                         
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            PingResultMetric("Avg FPS", if (lastSession.avgFps.toInt() > 0) "${lastSession.avgFps.toInt()}" else "--")
-                            PingResultMetric("Avg Ping", if (lastSession.avgPingMs > 0) "${lastSession.avgPingMs}ms" else "--")
-                            PingResultMetric("Max Temp", if (lastSession.maxTemp.toInt() > 0) "${lastSession.maxTemp.toInt()}°C" else "--")
+                            val avgFps = lastSession.avgFps.toInt()
+                            val fpsColorHex = if (avgFps > 0) com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getFpsColor(avgFps, 60) else "#FFFFFF"
+                            PingResultMetric("Avg FPS", if (avgFps > 0) "$avgFps" else "--", if (avgFps > 0) Color(android.graphics.Color.parseColor(fpsColorHex)) else MaterialTheme.colorScheme.onSurface)
+                            
+                            val avgPing = lastSession.avgPingMs
+                            val pingColorHex = if (avgPing > 0) com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getPingColor(avgPing) else "#FFFFFF"
+                            PingResultMetric("Avg Ping", if (avgPing > 0) "${avgPing}ms" else "--", if (avgPing > 0) Color(android.graphics.Color.parseColor(pingColorHex)) else MaterialTheme.colorScheme.onSurface)
+                            
+                            val maxTemp = lastSession.maxTemp
+                            val tempColorHex = if (maxTemp > 0f) com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getTempColor(maxTemp) else "#FFFFFF"
+                            PingResultMetric("Max Temp", if (maxTemp > 0f) "${maxTemp.toInt()}°C" else "--", if (maxTemp > 0f) Color(android.graphics.Color.parseColor(tempColorHex)) else MaterialTheme.colorScheme.onSurface)
                         }
                         
                         Spacer(modifier = Modifier.height(16.dp))
@@ -546,10 +562,10 @@ fun MetricBar(label: String, value: String, progress: Float, icon: androidx.comp
 }
 
 @Composable
-fun PingResultMetric(label: String, value: String) {
+fun PingResultMetric(label: String, value: String, color: Color = MaterialTheme.colorScheme.onSurface) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(90.dp)) {
         Text(text = label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = color)
     }
 }
 

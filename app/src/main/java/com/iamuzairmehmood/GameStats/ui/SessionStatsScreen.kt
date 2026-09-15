@@ -182,9 +182,11 @@ fun SessionStatsScreen(
                             ) {
                                 Column {
                                     Text("Avg Frame Rate", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                                    val avgFpsInt = avgFpsOverall.toInt()
+                                    val fpsColorHex = if (avgFpsInt > 0) com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getFpsColor(avgFpsInt, 60) else "#FFFFFF"
                                     Text(
-                                        text = "${avgFpsOverall.toInt()} FPS",
-                                        color = MaterialTheme.colorScheme.onSurface,
+                                        text = "$avgFpsInt FPS",
+                                        color = if (avgFpsInt > 0) Color(android.graphics.Color.parseColor(fpsColorHex)) else MaterialTheme.colorScheme.onSurface,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         fontFamily = FontFamily.Monospace
@@ -193,9 +195,10 @@ fun SessionStatsScreen(
                                 
                                 Column(horizontalAlignment = Alignment.End) {
                                     Text("Avg Network Latency", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
+                                    val pingColorHex = if (avgPingOverall > 0) com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getPingColor(avgPingOverall) else "#FFFFFF"
                                     Text(
                                         text = "${avgPingOverall} ms",
-                                        color = if (avgPingOverall > 100) ZoneOrange else StatSupported,
+                                        color = if (avgPingOverall > 0) Color(android.graphics.Color.parseColor(pingColorHex)) else MaterialTheme.colorScheme.onSurface,
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         fontFamily = FontFamily.Monospace

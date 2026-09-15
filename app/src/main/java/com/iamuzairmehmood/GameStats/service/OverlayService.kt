@@ -268,29 +268,58 @@ class OverlayService : Service() {
                 if (stats != null) {
                     val fps = stats.fps ?: 60
                     val fpsStr = fps.toString()
-                    val fpsColor = if (fps >= 54) "#4CAF50" else if (fps >= 45) "#FF9800" else "#F44336"
+                    val targetFps = stats.currentRefreshRateHz.toInt()
+                    val fpsColor = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getFpsColor(fps, if (targetFps > 0) targetFps else 60)
                     tvFps?.text = fpsStr
                     tvFps?.setTextColor(Color.parseColor(fpsColor))
                     
                     val temp = stats.temperatureCelsius
-                    val tempColor = if (temp < 40) "#4CAF50" else if (temp <= 44) "#FF9800" else "#F44336"
+                    val tempColor = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getTempColor(temp)
                     tvTemp?.text = "${"%.1f".format(temp)}°C"
                     tvTemp?.setTextColor(Color.parseColor(tempColor))
                     
                     val ping = stats.pingMs
-                    val pingColor = if (ping <= 20) "#8BC34A" else if (ping <= 50) "#4CAF50" else if (ping <= 100) "#FF9800" else "#F44336"
+                    val pingColor = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getPingColor(ping)
                     tvPing?.text = "$ping ms"
                     tvPing?.setTextColor(Color.parseColor(pingColor))
                     
                     val cpu = stats.cpuLoadPercent ?: 30 // Fallback
-                    val cpuColor = if (cpu < 65) "#4CAF50" else if (cpu <= 82) "#FF9800" else "#F44336"
+                    val cpuColor = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getCpuColor(cpu)
                     tvRam?.text = "$cpu%" // Repurposing tvRam to tvCpu in UI for now, we'll fix the label in UI building
                     tvRam?.setTextColor(Color.parseColor(cpuColor))
                     
                     tvRefresh?.text = "${stats.currentRefreshRateHz.toInt()} Hz"
-                    tvBattery?.text = "${stats.batteryPercent}%"
+                    val batt = stats.batteryPercent
+                    val battColor = com.iamuzairmehmood.GameStats.utils.PerformanceColorUtils.getBatteryColor(batt)
+                    tvBattery?.text = "$batt%"
+                    tvBattery?.setTextColor(Color.parseColor(battColor))
                     
-                    compactText?.text = "⚡ $fpsStr FPS • ${ping}ms • ${cpu}% • ${"%.0f".format(temp)}°C"
+                    val compactStr = android.text.SpannableStringBuilder()
+                    compactStr.append("⚡ ")
+                    
+                    val startFps = compactStr.length
+                    compactStr.append("$fpsStr FPS")
+                    compactStr.setSpan(android.text.style.ForegroundColorSpan(Color.parseColor(fpsColor)), startFps, compactStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    
+                    compactStr.append(" • ")
+                    
+                    val startPing = compactStr.length
+                    compactStr.append("${ping}ms")
+                    compactStr.setSpan(android.text.style.ForegroundColorSpan(Color.parseColor(pingColor)), startPing, compactStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    
+                    compactStr.append(" • ")
+                    
+                    val startCpu = compactStr.length
+                    compactStr.append("${cpu}%")
+                    compactStr.setSpan(android.text.style.ForegroundColorSpan(Color.parseColor(cpuColor)), startCpu, compactStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    
+                    compactStr.append(" • ")
+                    
+                    val startTemp = compactStr.length
+                    compactStr.append("${"%.0f".format(temp)}°C")
+                    compactStr.setSpan(android.text.style.ForegroundColorSpan(Color.parseColor(tempColor)), startTemp, compactStr.length, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                    compactText?.text = compactStr
                 }
                 delay(1000L)
             }
