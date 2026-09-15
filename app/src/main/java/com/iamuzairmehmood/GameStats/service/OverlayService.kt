@@ -98,10 +98,21 @@ class OverlayService : Service() {
         overlayView = root
 
         // Background styling
+        val app = application as? GameStatsApplication
+        val accentHex = when(app?.settingsRepository?.themeAccent?.value) {
+            com.iamuzairmehmood.GameStats.ui.theme.ThemeAccent.GREEN -> "#00E676"
+            com.iamuzairmehmood.GameStats.ui.theme.ThemeAccent.BLUE -> "#00B0FF"
+            com.iamuzairmehmood.GameStats.ui.theme.ThemeAccent.PURPLE -> "#651FFF"
+            com.iamuzairmehmood.GameStats.ui.theme.ThemeAccent.ORANGE -> "#FF9100"
+            com.iamuzairmehmood.GameStats.ui.theme.ThemeAccent.RED -> "#FF1744"
+            else -> "#00E676"
+        }
+        val accentColor = Color.parseColor(accentHex)
+
         val bgDrawable = GradientDrawable().apply {
             setColor(Color.argb(220, 10, 14, 23)) // Semi-transparent dark obsidian
             cornerRadius = 24f
-            setStroke(2, Color.parseColor("#00E5FF")) // Cyber cyan border
+            setStroke(2, accentColor)
         }
         root.background = bgDrawable
         root.setPadding(24, 18, 24, 18)
@@ -119,14 +130,14 @@ class OverlayService : Service() {
         }
         val title = TextView(this).apply {
             text = "⚡ GAMEBOOST HUD"
-            setTextColor(Color.parseColor("#00E5FF"))
+            setTextColor(accentColor)
             textSize = 11f
             typeface = Typeface.DEFAULT_BOLD
             setPadding(0, 0, 16, 8)
         }
         val modeToggle = TextView(this).apply {
             text = "[ - ]"
-            setTextColor(Color.parseColor("#FF9100"))
+            setTextColor(Color.parseColor("#94A3B8"))
             textSize = 10f
             typeface = Typeface.MONOSPACE
             setPadding(8, 0, 0, 8)
@@ -139,19 +150,19 @@ class OverlayService : Service() {
         linear.addView(titleRow)
 
         // Metric rows
-        tvFps = createMetricRow(linear, "FPS", "60", "#00E5FF")
-        tvTemp = createMetricRow(linear, "TEMP", "36°C", "#FF9100")
-        tvPing = createMetricRow(linear, "PING", "38 ms", "#10B981")
-        tvRam = createMetricRow(linear, "CPU", "30%", "#4CAF50")
-        tvRefresh = createMetricRow(linear, "REFRESH", "60 Hz", "#7C4DFF")
-        tvBattery = createMetricRow(linear, "BATTERY", "75%", "#10B981")
+        tvFps = createMetricRow(linear, "FPS", "60", accentHex)
+        tvTemp = createMetricRow(linear, "TEMP", "36°C", accentHex)
+        tvPing = createMetricRow(linear, "PING", "38 ms", accentHex)
+        tvRam = createMetricRow(linear, "CPU", "30%", accentHex)
+        tvRefresh = createMetricRow(linear, "REFRESH", "60 Hz", accentHex)
+        tvBattery = createMetricRow(linear, "BATTERY", "75%", accentHex)
 
         root.addView(linear)
 
         // Compact pill text
         compactText = TextView(this).apply {
             text = "⚡ 60 FPS • 38ms"
-            setTextColor(Color.parseColor("#00E5FF"))
+            setTextColor(accentColor)
             textSize = 12f
             typeface = Typeface.DEFAULT_BOLD
             visibility = View.GONE

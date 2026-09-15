@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -93,81 +94,99 @@ fun HomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Main Status Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(28.dp),
-                border = if (isGamingActive) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.5f)) else null,
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            val transition = rememberInfiniteTransition()
+            val pulseAlpha by transition.animateFloat(
+                initialValue = 0.2f,
+                targetValue = 0.8f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "PulseAlpha"
+            )
+            
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            if (isGamingActive) {
-                                Brush.linearGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.primaryContainer,
-                                        MaterialTheme.colorScheme.tertiaryContainer
-                                    )
-                                )
-                            } else {
-                                Brush.linearGradient(
-                                    colors = listOf(
-                                        MaterialTheme.colorScheme.surfaceVariant,
-                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.8f)
-                                    )
-                                )
-                            }
-                        )
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Box(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .clip(CircleShape)
-                                .background(if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.SportsEsports,
-                                contentDescription = null,
-                                tint = if (isGamingActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "GAME MODE",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            letterSpacing = 3.sp
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = if (isGamingActive) "ACTIVE" else "INACTIVE",
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Black,
-                            color = if (isGamingActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                        )
-                        if (isGamingActive && stats.activeGameName != null) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Surface(
-                                color = MaterialTheme.colorScheme.primary.copy(alpha=0.15f),
+                // Pulsing outer ring
+                if (isGamingActive) {
+                    Box(
+                        modifier = Modifier
+                            .size(200.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 2.dp,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = pulseAlpha),
                                 shape = CircleShape
-                            ) {
-                                Text(
-                                    text = "Target: ${stats.activeGameName}",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
-                                )
-                            }
-                        }
-                    }
+                            )
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(240.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = pulseAlpha * 0.5f),
+                                shape = CircleShape
+                            )
+                    )
+                }
+                
+                // Central Core
+                Column(
+                    modifier = Modifier
+                        .size(160.dp)
+                        .clip(CircleShape)
+                        .background(
+                            if (isGamingActive) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) 
+                            else MaterialTheme.colorScheme.surfaceVariant
+                        )
+                        .border(
+                            width = 2.dp,
+                            color = if (isGamingActive) MaterialTheme.colorScheme.primary 
+                                    else MaterialTheme.colorScheme.outline,
+                            shape = CircleShape
+                        ),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        Icons.Default.SportsEsports,
+                        contentDescription = null,
+                        tint = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(36.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "GAME MODE",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        letterSpacing = 2.sp
+                    )
+                    Text(
+                        text = if (isGamingActive) "ACTIVE" else "INACTIVE",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+            if (isGamingActive && stats.activeGameName != null) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primary.copy(alpha=0.15f),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Optimizing: ${stats.activeGameName}",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                    )
                 }
             }
             
@@ -296,26 +315,58 @@ fun HomeScreen(
                 border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        PerformanceMetric("FPS", stats.fps?.toString() ?: "--", Icons.Default.Speed)
-                        PerformanceMetric("CPU", if (stats.cpuLoadPercent != null) "${stats.cpuLoadPercent}%" else "Unavail", Icons.Default.Memory)
-                        PerformanceMetric("GPU", "Unsupported", Icons.Default.DeveloperBoard)
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        PerformanceMetric("RAM", "${stats.ramUsedGb} GB", Icons.Default.Storage)
-                        PerformanceMetric("TEMP", "${stats.temperatureCelsius}°C", Icons.Default.Thermostat)
-                        PerformanceMetric("PING", "${stats.pingMs} ms", Icons.Default.NetworkPing)
-                    }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        PerformanceMetric("BATT", "${stats.batteryPercent}%", Icons.Default.BatteryFull)
-                        PerformanceMetric("NET", stats.networkType, Icons.Default.Wifi)
-                        PerformanceMetric("HZ", "${stats.currentRefreshRateHz.toInt()} Hz", Icons.Default.Refresh)
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        val fpsColor = if ((stats.fps ?: 60) >= 54) Color(0xFF4CAF50) else if ((stats.fps ?: 60) >= 45) Color(0xFFFF9800) else Color(0xFFF44336)
+                        MetricBar(
+                            label = "FPS (Frame Pacer)", 
+                            value = stats.fps?.toString() ?: "--", 
+                            progress = (stats.fps ?: 60) / 120f,
+                            icon = Icons.Default.Speed,
+                            color = fpsColor
+                        )
+                        val cpuLoad = stats.cpuLoadPercent ?: 30
+                        val cpuColor = if (cpuLoad < 65) Color(0xFF4CAF50) else if (cpuLoad <= 82) Color(0xFFFF9800) else Color(0xFFF44336)
+                        MetricBar(
+                            label = "CPU LOAD", 
+                            value = if (stats.cpuLoadPercent != null) "${stats.cpuLoadPercent}%" else "Unavail", 
+                            progress = cpuLoad / 100f,
+                            icon = Icons.Default.Memory,
+                            color = cpuColor
+                        )
+                        MetricBar(
+                            label = "RAM USAGE", 
+                            value = "${stats.ramUsedGb} GB", 
+                            progress = stats.ramPercent / 100f,
+                            icon = Icons.Default.Storage,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        val temp = stats.temperatureCelsius
+                        val tempColor = if (temp < 40) Color(0xFF4CAF50) else if (temp <= 44) Color(0xFFFF9800) else Color(0xFFF44336)
+                        MetricBar(
+                            label = "TEMPERATURE", 
+                            value = "${stats.temperatureCelsius}°C", 
+                            progress = stats.temperatureCelsius / 80f,
+                            icon = Icons.Default.Thermostat,
+                            color = tempColor
+                        )
+                        val ping = stats.pingMs
+                        val pingColor = if (ping <= 20) Color(0xFF8BC34A) else if (ping <= 50) Color(0xFF4CAF50) else if (ping <= 100) Color(0xFFFF9800) else Color(0xFFF44336)
+                        MetricBar(
+                            label = "PING (LATENCY)", 
+                            value = "${stats.pingMs} ms", 
+                            progress = stats.pingMs / 200f,
+                            icon = Icons.Default.NetworkPing,
+                            color = pingColor
+                        )
+                        val batt = stats.batteryPercent
+                        val battColor = if (batt > 20) Color(0xFF4CAF50) else Color(0xFFF44336)
+                        MetricBar(
+                            label = "BATTERY", 
+                            value = "${stats.batteryPercent}%", 
+                            progress = batt / 100f,
+                            icon = Icons.Default.BatteryFull,
+                            color = battColor
+                        )
                     }
                 }
             }
@@ -469,12 +520,28 @@ fun HomeScreen(
 }
 
 @Composable
-fun PerformanceMetric(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(90.dp)) {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(text = label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
-        Text(text = value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontFamily = FontFamily.Monospace)
+fun MetricBar(label: String, value: String, progress: Float, icon: androidx.compose.ui.graphics.vector.ImageVector, color: Color) {
+    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier.size(28.dp).clip(CircleShape).background(color.copy(alpha=0.15f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(16.dp))
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(text = label, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
+            }
+            Text(text = value, fontSize = 15.sp, fontWeight = FontWeight.Black, color = color, fontFamily = FontFamily.Monospace)
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        LinearProgressIndicator(
+            progress = { progress.coerceIn(0f, 1f) },
+            modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
+            color = color,
+            trackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f)
+        )
     }
 }
 
