@@ -8,7 +8,6 @@ import java.util.Date
 import java.util.Locale
 import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -24,12 +23,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.palette.graphics.Palette
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -93,39 +95,78 @@ fun HomeScreen(
             // Main Status Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isGamingActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-                ),
-                border = androidx.compose.foundation.BorderStroke(1.dp, if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
+                shape = RoundedCornerShape(28.dp),
+                border = if (isGamingActive) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.5f)) else null,
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
-                Column(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "GAME MODE",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                        letterSpacing = 2.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = if (isGamingActive) "ON" else "OFF",
-                        fontSize = 40.sp,
-                        fontWeight = FontWeight.Black,
-                        color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                    )
-                    if (isGamingActive && stats.activeGameName != null) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Target: ${stats.activeGameName}",
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        .background(
+                            if (isGamingActive) {
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primaryContainer,
+                                        MaterialTheme.colorScheme.tertiaryContainer
+                                    )
+                                )
+                            } else {
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.8f)
+                                    )
+                                )
+                            }
                         )
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.SportsEsports,
+                                contentDescription = null,
+                                tint = if (isGamingActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "GAME MODE",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            letterSpacing = 3.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (isGamingActive) "ACTIVE" else "INACTIVE",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Black,
+                            color = if (isGamingActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                        )
+                        if (isGamingActive && stats.activeGameName != null) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Surface(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha=0.15f),
+                                shape = CircleShape
+                            ) {
+                                Text(
+                                    text = "Target: ${stats.activeGameName}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -450,12 +491,35 @@ fun PingResultMetric(label: String, value: String) {
 fun TopAppItem(app: GameProfileEntity, onClick: () -> Unit) {
     val context = LocalContext.current
     var iconBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-    
+    var extractedColor by remember { mutableStateOf<Color?>(null) }
+
+    val defaultFallback = MaterialTheme.colorScheme.primary
+    val displayColor = remember(app.profileColorHex, extractedColor) {
+        if (app.profileColorHex != null) {
+            try {
+                Color(android.graphics.Color.parseColor(app.profileColorHex))
+            } catch(e: Exception) {
+                extractedColor ?: defaultFallback
+            }
+        } else {
+            extractedColor ?: defaultFallback
+        }
+    }
+
     LaunchedEffect(app.packageName) {
         try {
             val pm = context.packageManager
             val drawable = pm.getApplicationIcon(app.packageName)
-            iconBitmap = drawable.toBitmap().asImageBitmap()
+            val bmp = drawable.toBitmap()
+            iconBitmap = bmp.asImageBitmap()
+            
+            Palette.from(bmp).generate { palette ->
+                palette?.dominantSwatch?.rgb?.let { colorInt ->
+                    extractedColor = Color(colorInt)
+                } ?: palette?.vibrantSwatch?.rgb?.let { colorInt ->
+                    extractedColor = Color(colorInt)
+                }
+            }
         } catch (e: Exception) {
             // fallback
         }
@@ -465,21 +529,27 @@ fun TopAppItem(app: GameProfileEntity, onClick: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.width(72.dp).clickable { onClick() }
     ) {
-        if (iconBitmap != null) {
-            Image(
-                bitmap = iconBitmap!!,
-                contentDescription = app.appName,
-                modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.primaryContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.VideogameAsset, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(displayColor.copy(alpha = 0.15f))
+                .border(2.dp, displayColor.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (iconBitmap != null) {
+                Image(
+                    bitmap = iconBitmap!!,
+                    contentDescription = app.appName,
+                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+                )
+            } else {
+                Icon(
+                    Icons.Default.VideogameAsset, 
+                    contentDescription = null, 
+                    tint = displayColor,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
         Spacer(modifier = Modifier.height(8.dp))

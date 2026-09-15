@@ -1,20 +1,19 @@
-import re
-
-with open('app/src/main/java/com/iamuzairmehmood/gameboostiq/ui/HomeScreen.kt', 'r') as f:
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/HomeScreen.kt", "r") as f:
     lines = f.readlines()
 
-out = []
-in_nav_cards = False
+new_lines = []
 for line in lines:
-    if "GameBoostIQ MODULES" in line or "FIREBOOST MODULES" in line:
-        in_nav_cards = True
-    
-    if in_nav_cards:
-        if "if (latestRestoreReport != null)" in line:
-            in_nav_cards = False
-            out.append(line)
+    if "import androidx.compose.ui.graphics" in line:
+        pass # drop it
     else:
-        out.append(line)
+        new_lines.append(line)
 
-with open('app/src/main/java/com/iamuzairmehmood/gameboostiq/ui/HomeScreen.kt', 'w') as f:
-    f.writelines(out)
+# Add correct imports near the top
+import_block = """import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+"""
+new_lines.insert(25, import_block)
+
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/HomeScreen.kt", "w") as f:
+    f.writelines(new_lines)

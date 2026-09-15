@@ -1,108 +1,127 @@
 import re
-
-with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/GameLibraryScreen.kt", "r") as f:
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/HomeScreen.kt", "r") as f:
     content = f.read()
 
-old_card = """@Composable
-private fun GameItemCard(
-    game: GameProfileEntity,
-    onLaunch: () -> Unit,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
-) {
-    val isFreeFireTitle = game.packageName.contains("dts.freefireth") || game.packageName.contains("dts.freefiremax")
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("game_item_${game.packageName}"),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(
-            if (isFreeFireTitle) 1.5.dp else 1.dp,
-            if (isFreeFireTitle) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            val context = LocalContext.current
-            var iconBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-            
-            LaunchedEffect(game.packageName) {
-                try {
-                    val pm = context.packageManager
-                    val drawable = pm.getApplicationIcon(game.packageName)
-                    iconBitmap = drawable.toBitmap().asImageBitmap()
-                } catch (e: Exception) {
+old_card = """            // Main Status Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isGamingActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                ),
+                border = androidx.compose.foundation.BorderStroke(1.dp, if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "GAME MODE",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        letterSpacing = 2.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isGamingActive) "ON" else "OFF",
+                        fontSize = 40.sp,
+                        fontWeight = FontWeight.Black,
+                        color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                    )
+                    if (isGamingActive && stats.activeGameName != null) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Target: ${stats.activeGameName}",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }"""
 
-new_card = """@Composable
-private fun GameItemCard(
-    game: GameProfileEntity,
-    onLaunch: () -> Unit,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
-) {
-    val context = LocalContext.current
-    var iconBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
-    var extractedColor by remember { mutableStateOf<Color?>(null) }
-
-    val defaultFallback = MaterialTheme.colorScheme.primary
-    val displayColor = remember(game.profileColorHex, extractedColor) {
-        if (game.profileColorHex != null) {
-            try {
-                Color(android.graphics.Color.parseColor(game.profileColorHex))
-            } catch(e: Exception) {
-                extractedColor ?: defaultFallback
-            }
-        } else {
-            extractedColor ?: defaultFallback
-        }
-    }
-
-    LaunchedEffect(game.packageName) {
-        try {
-            val pm = context.packageManager
-            val drawable = pm.getApplicationIcon(game.packageName)
-            val bmp = drawable.toBitmap()
-            iconBitmap = bmp.asImageBitmap()
-            
-            Palette.from(bmp).generate { palette ->
-                palette?.dominantSwatch?.rgb?.let { colorInt ->
-                    extractedColor = Color(colorInt)
-                } ?: palette?.vibrantSwatch?.rgb?.let { colorInt ->
-                    extractedColor = Color(colorInt)
+new_card = """            // Main Status Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(28.dp),
+                border = if (isGamingActive) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha=0.5f)) else null,
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            if (isGamingActive) {
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.primaryContainer,
+                                        MaterialTheme.colorScheme.tertiaryContainer
+                                    )
+                                )
+                            } else {
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        MaterialTheme.colorScheme.surfaceVariant,
+                                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.8f)
+                                    )
+                                )
+                            }
+                        )
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Box(
+                            modifier = Modifier
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .background(if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha=0.2f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.SportsEsports,
+                                contentDescription = null,
+                                tint = if (isGamingActive) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "GAME MODE",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                            letterSpacing = 3.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = if (isGamingActive) "ACTIVE" else "INACTIVE",
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Black,
+                            color = if (isGamingActive) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                        )
+                        if (isGamingActive && stats.activeGameName != null) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Surface(
+                                color = MaterialTheme.colorScheme.primary.copy(alpha=0.15f),
+                                shape = CircleShape
+                            ) {
+                                Text(
+                                    text = "Target: ${stats.activeGameName}",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                                )
+                            }
+                        }
+                    }
                 }
-            }
-        } catch (e: Exception) {
-        }
-    }
-    
-    val isFreeFireTitle = game.packageName.contains("dts.freefireth") || game.packageName.contains("dts.freefiremax")
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("game_item_${game.packageName}"),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = androidx.compose.foundation.BorderStroke(
-            1.5.dp, displayColor.copy(alpha = 0.5f)
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {"""
+            }"""
 
 content = content.replace(old_card, new_card)
 
-with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/GameLibraryScreen.kt", "w") as f:
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/HomeScreen.kt", "w") as f:
     f.write(content)

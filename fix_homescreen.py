@@ -1,201 +1,139 @@
 import re
 
-content = """package com.iamuzairmehmood.gameboostiq.ui
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/HomeScreen.kt", "r") as f:
+    content = f.read()
 
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.iamuzairmehmood.gameboostiq.data.GameProfileEntity
-import com.iamuzairmehmood.gameboostiq.model.LiveGamingStats
-import com.iamuzairmehmood.gameboostiq.model.PerformanceMode
-import com.iamuzairmehmood.gameboostiq.service.OverlayService
-import kotlinx.coroutines.launch
+# Add Palette import
+if "androidx.palette.graphics.Palette" not in content:
+    content = content.replace("import androidx.compose.ui.platform.LocalContext", "import androidx.palette.graphics.Palette\nimport androidx.compose.ui.platform.LocalContext")
 
-@Composable
-fun HomeScreen(
-    stats: LiveGamingStats,
-    isGamingActive: Boolean,
-    onStartGaming: (PerformanceMode, Boolean) -> Unit,
-    onStopGaming: () -> Unit,
-    onNavigate: (String) -> Unit,
-    onOpenDrawer: () -> Unit
-) {
+
+old_top_app_item = """@Composable
+fun TopAppItem(app: GameProfileEntity, onClick: () -> Unit) {
     val context = LocalContext.current
-    var overlayEnabled by remember { mutableStateOf(stats.isOverlayActive) }
-    val hasOverlayPermission = Settings.canDrawOverlays(context)
-
+    var iconBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    
+    LaunchedEffect(app.packageName) {
+        try {
+            val pm = context.packageManager
+            val drawable = pm.getApplicationIcon(app.packageName)
+            iconBitmap = drawable.toBitmap().asImageBitmap()
+        } catch (e: Exception) {
+            // fallback
+        }
+    }
+    
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(72.dp).clickable { onClick() }
     ) {
-        // App Header Brand
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Menu,
-                contentDescription = "Menu",
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier
-                    .size(28.dp)
-                    .clickable { onOpenDrawer() }
+        if (iconBitmap != null) {
+            Image(
+                bitmap = iconBitmap!!,
+                contentDescription = app.appName,
+                modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
             )
-            Text(
-                "Game BoostIQ",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-            // Empty box for alignment balance
-            Box(modifier = Modifier.size(28.dp))
-        }
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Main Status Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = if (isGamingActive) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
-            ),
-            border = androidx.compose.foundation.BorderStroke(1.dp, if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
-        ) {
-            Column(
+        } else {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "GAME MODE",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                    letterSpacing = 2.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = if (isGamingActive) "ON" else "OFF",
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Black,
-                    color = if (isGamingActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
-                )
+                Icon(Icons.Default.VideogameAsset, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = app.appName,
+            fontSize = 11.sp,
+            maxLines = 1,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
+        )
+    }
+}"""
 
-        Spacer(modifier = Modifier.height(24.dp))
+new_top_app_item = """@Composable
+fun TopAppItem(app: GameProfileEntity, onClick: () -> Unit) {
+    val context = LocalContext.current
+    var iconBitmap by remember { mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null) }
+    var extractedColor by remember { mutableStateOf<Color?>(null) }
 
-        // Primary Action
-        Button(
-            onClick = {
-                if (isGamingActive) {
-                    onStopGaming()
-                } else {
-                    onNavigate("game_library")
+    val defaultFallback = MaterialTheme.colorScheme.primary
+    val displayColor = remember(app.profileColorHex, extractedColor) {
+        if (app.profileColorHex != null) {
+            try {
+                Color(android.graphics.Color.parseColor(app.profileColorHex))
+            } catch(e: Exception) {
+                extractedColor ?: defaultFallback
+            }
+        } else {
+            extractedColor ?: defaultFallback
+        }
+    }
+
+    LaunchedEffect(app.packageName) {
+        try {
+            val pm = context.packageManager
+            val drawable = pm.getApplicationIcon(app.packageName)
+            val bmp = drawable.toBitmap()
+            iconBitmap = bmp.asImageBitmap()
+            
+            Palette.from(bmp).generate { palette ->
+                palette?.dominantSwatch?.rgb?.let { colorInt ->
+                    extractedColor = Color(colorInt)
+                } ?: palette?.vibrantSwatch?.rgb?.let { colorInt ->
+                    extractedColor = Color(colorInt)
                 }
-            },
+            }
+        } catch (e: Exception) {
+            // fallback
+        }
+    }
+    
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(72.dp).clickable { onClick() }
+    ) {
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(64.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = if (isGamingActive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-            )
+                .size(56.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(displayColor.copy(alpha = 0.15f))
+                .border(2.dp, displayColor.copy(alpha = 0.5f), RoundedCornerShape(16.dp)),
+            contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = if (isGamingActive) "STOP GAMING" else "START GAMING",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.5.sp
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        if (isGamingActive) {
-            // Quick Metrics
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                QuickMetricItem("FPS", stats.fps?.toString() ?: "--")
-                QuickMetricItem("PING", "${stats.pingMs}ms")
-                QuickMetricItem("CPU", "${stats.cpuLoadPercent}%")
-                QuickMetricItem("TEMP", "${stats.temperatureCelsius}°C")
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // HUD & Session Status
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Layers, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = if (hasOverlayPermission) "HUD: Ready" else "HUD: Permission Required",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Timer, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = if (isGamingActive) "Active Session" else "No active session",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+            if (iconBitmap != null) {
+                Image(
+                    bitmap = iconBitmap!!,
+                    contentDescription = app.appName,
+                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+                )
+            } else {
+                Icon(
+                    Icons.Default.VideogameAsset, 
+                    contentDescription = null, 
+                    tint = displayColor,
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = app.appName,
+            fontSize = 11.sp,
+            maxLines = 1,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
+        )
     }
-}
+}"""
 
-@Composable
-private fun QuickMetricItem(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.SemiBold)
-        Text(text = value, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontFamily = FontFamily.Monospace)
-    }
-}
-"""
+content = content.replace(old_top_app_item, new_top_app_item)
 
-with open('app/src/main/java/com/iamuzairmehmood/gameboostiq/ui/HomeScreen.kt', 'w') as f:
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/HomeScreen.kt", "w") as f:
     f.write(content)
-

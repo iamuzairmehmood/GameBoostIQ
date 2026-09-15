@@ -4,7 +4,24 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <path android:pathData="M0,0h108v108h-108z">
+        <aapt:attr name="android:fillColor" xmlns:aapt="http://schemas.android.com/aapt">
+            <gradient
+                android:type="linear"
+                android:startX="0"
+                android:startY="0"
+                android:endX="108"
+                android:endY="108">
+                <item android:color="#4A148C" android:offset="0.0" />
+                <item android:color="#1A237E" android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Add some subtle background tech lines -->
     <path
-        android:fillColor="#0A0E17"
-        android:pathData="M0,0h108v108h-108z" />
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1"
+        android:strokeAlpha="0.1"
+        android:pathData="M 0,20 L 108,20 M 0,40 L 108,40 M 0,60 L 108,60 M 0,80 L 108,80 M 20,0 L 20,108 M 40,0 L 40,108 M 60,0 L 60,108 M 80,0 L 80,108"/>
 </vector>
