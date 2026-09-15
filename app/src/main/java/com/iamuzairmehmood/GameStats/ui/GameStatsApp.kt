@@ -54,7 +54,8 @@ fun GameStatsApp() {
 
     val games by app.repository.gameProfiles.collectAsState(initial = emptyList())
     val sessions by app.repository.allSessions.collectAsState(initial = emptyList())
-    val deviceReport = remember { app.capabilityScanner.performFullScan() }
+    var deviceReport by remember { mutableStateOf(app.capabilityScanner.performFullScan()) }
+    var isScanningCapabilities by remember { mutableStateOf(false) }
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: "home"
@@ -257,9 +258,18 @@ fun GameStatsApp() {
                     composable("capability_scanner") {
                         CapabilityScannerScreen(
                             report = deviceReport,
+                            isScanning = isScanningCapabilities,
                             onBack = { navController.popBackStack() },
                             onRescan = {
-                                Toast.makeText(context, "Audit refreshed", Toast.LENGTH_SHORT).show()
+                                if (!isScanningCapabilities) {
+                                    scope.launch {
+                                        isScanningCapabilities = true
+                                        kotlinx.coroutines.delay(1200L) // Simulate sensor probing delay for UX
+                                        deviceReport = app.capabilityScanner.performFullScan()
+                                        isScanningCapabilities = false
+                                        Toast.makeText(context, "Sensor data refreshed", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
                         )
                     }
