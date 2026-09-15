@@ -1,4 +1,4 @@
-package com.iamuzairmehmood.GameStats.ui
+content = """package com.iamuzairmehmood.GameStats.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -192,3 +192,6 @@ fun PermissionItem(icon: ImageVector, name: String, description: String) {
         }
     }
 }
+"""
+with open("app/src/main/java/com/iamuzairmehmood/GameStats/ui/PrivacyScreen.kt", "w") as f:
+    f.write(content)
